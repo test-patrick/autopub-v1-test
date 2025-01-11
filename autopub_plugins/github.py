@@ -24,6 +24,9 @@ class GithubPlugin(AutopubPlugin):
         if not self.repository or not self.pr_number:
             raise AutopubException("This plugin must be run in GitHub Actions context")
 
+        print(f"Repository: {self.repository}")
+        print(f"PR number: {self.pr_number}")
+
     def _get_pr_number(self) -> Optional[int]:
         """Extract PR number from GitHub Actions event context."""
         event_path = os.environ.get("GITHUB_EVENT_PATH")
