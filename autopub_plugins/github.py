@@ -30,6 +30,7 @@ class GithubPlugin(AutopubPlugin):
     def _get_pr_number(self) -> Optional[int]:
         """Extract PR number from GitHub Actions event context."""
         event_path = os.environ.get("GITHUB_EVENT_PATH")
+
         if not event_path:
             return None
 
@@ -44,6 +45,9 @@ class GithubPlugin(AutopubPlugin):
 
     def _update_or_create_comment(self, text: str) -> None:
         """Update or create a comment on the current PR with the given text."""
+        print(
+            f"Updating or creating comment on PR {self.pr_number} in {self.repository}"
+        )
         g = Github(self.github_token)
         repo: Repository = g.get_repo(self.repository)
         pr: PullRequest = repo.get_pull(self.pr_number)
