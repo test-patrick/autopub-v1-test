@@ -116,10 +116,10 @@ class GithubPlugin(AutopubPlugin):
             """
         )
         repo: Repository = self._github.get_repo(self.repository)
-        repo.create_git_tag_and_release(
+        repo.create_git_release(
             tag=release_info.version,
-            release_name=release_info.version,
-            release_message=message,
+            name=release_info.version,
+            message=message,
         )
 
     def post_publish(self, release_info: ReleaseInfo) -> None:
