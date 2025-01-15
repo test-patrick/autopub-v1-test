@@ -48,6 +48,7 @@ jobs:
         with:
           name: autopub-data
           path: .autopub
+          include-hidden-files: true
 
       - name: Debug Info
         run: |
