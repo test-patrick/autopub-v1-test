@@ -19,6 +19,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
           
       - name: Check
+        id: check
         run: |
           if uvx --from autopub==1.0.0a26 --with pygithub autopub check; then
             echo "has_release=true" >> $GITHUB_OUTPUT
