@@ -35,7 +35,6 @@ jobs:
   publish:
     needs: check-release
     if: |
-      github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
       needs.check-release.outputs.has_release == 'true'
     runs-on: ubuntu-latest
