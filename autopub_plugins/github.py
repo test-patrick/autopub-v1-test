@@ -19,13 +19,6 @@ class GithubPlugin(AutopubPlugin):
 
         # Get repository and PR information from GitHub Actions environment
         self.repository = os.environ.get("GITHUB_REPOSITORY")
-        self.pr_number = self._get_pr_number()
-
-        if not self.repository or not self.pr_number:
-            raise AutopubException("This plugin must be run in GitHub Actions context")
-
-        print(f"Repository: {self.repository}")
-        print(f"PR number: {self.pr_number}")
 
     def _get_pr_number(self) -> Optional[int]:
         """Extract PR number from GitHub Actions event context."""
@@ -43,14 +36,12 @@ class GithubPlugin(AutopubPlugin):
                 return event["pull_request"]["number"]
             return None
 
-    def _update_or_create_comment(self, text: str) -> None:
+    def _update_or_create_comment(self, text: str, pr_number: int) -> None:
         """Update or create a comment on the current PR with the given text."""
-        print(
-            f"Updating or creating comment on PR {self.pr_number} in {self.repository}"
-        )
+        print(f"Updating or creating comment on PR {pr_number} in {self.repository}")
         g = Github(self.github_token)
         repo: Repository = g.get_repo(self.repository)
-        pr: PullRequest = repo.get_pull(self.pr_number)
+        pr: PullRequest = repo.get_pull(pr_number)
 
         # Look for existing autopub comment
         comment_marker = "<!-- autopub-comment -->"
@@ -69,9 +60,57 @@ class GithubPlugin(AutopubPlugin):
     def on_release_notes_valid(
         self, release_info: ReleaseInfo
     ) -> None:  # pragma: no cover
-        self._update_or_create_comment(release_info.release_notes)
+        pr_number = self._get_pr_number()
+
+        if pr_number is None:
+            return
+
+        self._update_or_create_comment(release_info.release_notes, pr_number)
 
     def on_release_notes_invalid(
         self, exception: AutopubException
     ) -> None:  # pragma: no cover
-        self._update_or_create_comment(str(exception))
+        pr_number = self._get_pr_number()
+
+        if pr_number is None:
+            return
+
+        self._update_or_create_comment(str(exception), pr_number)
+
+    def _get_pr_number_from_commit(self) -> Optional[int]:
+        event_path = os.environ.get("GITHUB_EVENT_PATH")
+        if not event_path:
+            return None
+
+        import json
+
+        with open(event_path) as f:
+            event = json.load(f)
+
+            # Handle pull_request events directly
+            if event.get("event_name") in ["pull_request", "pull_request_target"]:
+                return event["pull_request"]["number"]
+
+            # For other events, need to query GitHub API
+            sha = event["commits"][0]["id"]
+            g = Github(self.github_token)
+            repo: Repository = g.get_repo(self.repository)
+
+            # Get PRs associated with this commit
+            pulls = repo.get_commits_pulls(sha)
+
+            # Get first PR if any exist
+            try:
+                first_pr = next(pulls)
+                return first_pr.number
+            except StopIteration:
+                return None
+
+    def post_publish(self, release_info: ReleaseInfo) -> None:
+        text = f"This PR was published as {release_info.version}"
+        pr_number = self._get_pr_number_from_commit()
+
+        if pr_number is None:
+            return
+
+        self._update_or_create_comment(text, pr_number)
