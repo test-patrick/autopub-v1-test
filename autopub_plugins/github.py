@@ -4,7 +4,7 @@ import textwrap
 from functools import cached_property
 from typing import Optional
 
-from autopub.exceptions import AutopubException, CommandFailed
+from autopub.exceptions import AutopubException
 from autopub.plugins import AutopubPlugin
 from autopub.types import ReleaseInfo
 from github import Github
@@ -123,6 +123,7 @@ class GithubPlugin(AutopubPlugin):
         )
 
     def post_publish(self, release_info: ReleaseInfo) -> None:
+        print("🔥 Post-publish")
         text = f"This PR was published as {release_info.version}"
         pr_number = self._get_pr_number()
 
