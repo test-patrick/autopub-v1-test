@@ -19,6 +19,6 @@ jobs:
       # TODO: this should just be on PRs
 
       - name: Check
-        run: uvx --from autopub==1.0.0a25 --with pygithub autopub check
+        run: uvx --from autopub==1.0.0a26 --with pygithub autopub check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
