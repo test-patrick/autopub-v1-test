@@ -32,6 +32,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Upload .autopub
+        if: steps.check.outputs.has_release == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: autopub-data
+          path: .autopub
+
       - name: Debug Info
         run: |
           echo "GitHub ref: ${{ github.ref }}"
@@ -53,6 +60,12 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         
+      - name: Download .autopub
+        uses: actions/download-artifact@v3
+        with:
+          name: autopub-data
+          path: .autopub
+
       - name: Build and publish
         run: |
           uvx --from autopub==1.0.0a26 --with pygithub autopub build
