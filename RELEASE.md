@@ -1,5 +1,5 @@
 ---
-Release type: minor
+release type: minor
 ---
 
 # Release Notes

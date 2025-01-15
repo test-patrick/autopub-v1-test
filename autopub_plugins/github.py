@@ -39,12 +39,13 @@ class GithubPlugin(AutopubPlugin):
         if not self._event_data:
             return None
 
-        print(self._event_data)
-
         if self._event_data.get("event_name") in [
             "pull_request",
             "pull_request_target",
         ]:
+            return self._event_data["pull_request"]["number"]
+
+        if self._event_data.get("pull_request"):
             return self._event_data["pull_request"]["number"]
 
         sha = self._event_data["commits"][0]["id"]
