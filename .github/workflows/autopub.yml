@@ -25,6 +25,9 @@ jobs:
             echo "has_release=true" >> $GITHUB_OUTPUT
           else
             echo "has_release=false" >> $GITHUB_OUTPUT
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              exit 1
+            fi
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
