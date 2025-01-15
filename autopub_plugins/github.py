@@ -87,7 +87,6 @@ class GithubPlugin(AutopubPlugin):
         with open(event_path) as f:
             event = json.load(f)
 
-            # Handle pull_request events directly
             if event.get("event_name") in ["pull_request", "pull_request_target"]:
                 return event["pull_request"]["number"]
 
@@ -96,15 +95,16 @@ class GithubPlugin(AutopubPlugin):
             g = Github(self.github_token)
             repo: Repository = g.get_repo(self.repository)
 
-            # Get PRs associated with this commit
-            pulls = repo.get_commits_pulls(sha)
+            commit = repo.get_commit(sha)
 
-            # Get first PR if any exist
+            pulls = commit.get_pulls()
+
             try:
-                first_pr = next(pulls)
-                return first_pr.number
-            except StopIteration:
+                first_pr = pulls[0]
+            except IndexError:
                 return None
+
+            return first_pr.number
 
     def post_publish(self, release_info: ReleaseInfo) -> None:
         text = f"This PR was published as {release_info.version}"
