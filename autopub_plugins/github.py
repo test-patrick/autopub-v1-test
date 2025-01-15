@@ -1,5 +1,6 @@
 import json
 import os
+import textwrap
 from functools import cached_property
 from typing import Optional
 
@@ -104,6 +105,23 @@ class GithubPlugin(AutopubPlugin):
 
         self._update_or_create_comment(str(exception), pr_number)
 
+    def _create_release(self, release_info: ReleaseInfo) -> None:
+        message = textwrap.dedent(
+            f"""
+            ## {release_info.version}
+
+            {release_info.release_notes}
+
+            This release was contributed by todo in #{self._get_pr_number()}
+            """
+        )
+        repo: Repository = self._github.get_repo(self.repository)
+        repo.create_git_tag_and_release(
+            tag=release_info.version,
+            name=release_info.version,
+            message=message,
+        )
+
     def post_publish(self, release_info: ReleaseInfo) -> None:
         text = f"This PR was published as {release_info.version}"
         pr_number = self._get_pr_number()
@@ -114,3 +132,5 @@ class GithubPlugin(AutopubPlugin):
         self._update_or_create_comment(
             text, pr_number, marker="<!-- autopub-comment-published -->"
         )
+
+        self._create_release(release_info)
