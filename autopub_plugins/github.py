@@ -1,4 +1,6 @@
+import json
 import os
+from functools import cached_property
 from typing import Optional
 
 from autopub.exceptions import AutopubException, CommandFailed
@@ -20,36 +22,58 @@ class GithubPlugin(AutopubPlugin):
         # Get repository and PR information from GitHub Actions environment
         self.repository = os.environ.get("GITHUB_REPOSITORY")
 
-    def _get_pr_number(self) -> Optional[int]:
-        """Extract PR number from GitHub Actions event context."""
-        event_path = os.environ.get("GITHUB_EVENT_PATH")
+    @cached_property
+    def _github(self) -> Github:
+        return Github(self.github_token)
 
+    @cached_property
+    def _event_data(self) -> Optional[dict]:
+        event_path = os.environ.get("GITHUB_EVENT_PATH")
         if not event_path:
             return None
 
-        import json
-
         with open(event_path) as f:
-            event = json.load(f)
-            # Handle pull_request events
-            if "pull_request" in event:
-                return event["pull_request"]["number"]
+            return json.load(f)
+
+    def _get_pr_number(self) -> Optional[int]:
+        if not self._event_data:
             return None
 
-    def _update_or_create_comment(self, text: str, pr_number: int) -> None:
-        """Update or create a comment on the current PR with the given text."""
-        print(f"Updating or creating comment on PR {pr_number} in {self.repository}")
+        if self._event_data.get("event_name") in [
+            "pull_request",
+            "pull_request_target",
+        ]:
+            return self._event_data["pull_request"]["number"]
+
+        sha = self._event_data["commits"][0]["id"]
         g = Github(self.github_token)
         repo: Repository = g.get_repo(self.repository)
+
+        commit = repo.get_commit(sha)
+
+        pulls = commit.get_pulls()
+
+        try:
+            first_pr = pulls[0]
+        except IndexError:
+            return None
+
+        return first_pr.number
+
+    def _update_or_create_comment(
+        self, text: str, pr_number: int, marker: str = "<!-- autopub-comment -->"
+    ) -> None:
+        """Update or create a comment on the current PR with the given text."""
+        print(f"Updating or creating comment on PR {pr_number} in {self.repository}")
+        repo: Repository = self._github.get_repo(self.repository)
         pr: PullRequest = repo.get_pull(pr_number)
 
         # Look for existing autopub comment
-        comment_marker = "<!-- autopub-comment -->"
-        comment_body = f"{comment_marker}\n{text}"
+        comment_body = f"{marker}\n{text}"
 
         # Search for existing comment
         for comment in pr.get_issue_comments():
-            if comment_marker in comment.body:
+            if marker in comment.body:
                 # Update existing comment
                 comment.edit(comment_body)
                 return
@@ -77,40 +101,13 @@ class GithubPlugin(AutopubPlugin):
 
         self._update_or_create_comment(str(exception), pr_number)
 
-    def _get_pr_number_from_commit(self) -> Optional[int]:
-        event_path = os.environ.get("GITHUB_EVENT_PATH")
-        if not event_path:
-            return None
-
-        import json
-
-        with open(event_path) as f:
-            event = json.load(f)
-
-            if event.get("event_name") in ["pull_request", "pull_request_target"]:
-                return event["pull_request"]["number"]
-
-            # For other events, need to query GitHub API
-            sha = event["commits"][0]["id"]
-            g = Github(self.github_token)
-            repo: Repository = g.get_repo(self.repository)
-
-            commit = repo.get_commit(sha)
-
-            pulls = commit.get_pulls()
-
-            try:
-                first_pr = pulls[0]
-            except IndexError:
-                return None
-
-            return first_pr.number
-
     def post_publish(self, release_info: ReleaseInfo) -> None:
         text = f"This PR was published as {release_info.version}"
-        pr_number = self._get_pr_number_from_commit()
+        pr_number = self._get_pr_number()
 
         if pr_number is None:
             return
 
-        self._update_or_create_comment(text, pr_number)
+        self._update_or_create_comment(
+            text, pr_number, marker="<!-- autopub-comment-published -->"
+        )
