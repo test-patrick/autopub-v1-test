@@ -1,5 +1,6 @@
 import json
 import os
+import pathlib
 import textwrap
 from functools import cached_property
 from typing import Optional
@@ -116,11 +117,14 @@ class GithubPlugin(AutopubPlugin):
             """
         )
         repo: Repository = self._github.get_repo(self.repository)
-        repo.create_git_release(
+        release = repo.create_git_release(
             tag=release_info.version,
             name=release_info.version,
             message=message,
         )
+
+        for asset in pathlib.Path("dist").glob("*"):
+            release.upload_asset(asset)
 
     def post_publish(self, release_info: ReleaseInfo) -> None:
         print("🔥 Post-publish")
