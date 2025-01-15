@@ -85,8 +85,11 @@ jobs:
 
       - name: Build and publish
         run: |
+          echo "✨ Preparing..."
           uvx --from autopub==1.0.0a26 --with pygithub autopub prepare
+          echo "✨ Building..."
           uvx --from autopub==1.0.0a26 --with pygithub autopub build
+          echo "✨ Publishing..."
           uvx --from autopub==1.0.0a26 --with pygithub autopub publish
 
         env:
