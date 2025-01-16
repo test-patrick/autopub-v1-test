@@ -124,7 +124,8 @@ class GithubPlugin(AutopubPlugin):
         )
 
         for asset in pathlib.Path("dist").glob("*"):
-            release.upload_asset(str(asset))
+            if asset.suffix in [".tar.gz", ".whl"]:
+                release.upload_asset(str(asset))
 
     def post_publish(self, release_info: ReleaseInfo) -> None:
         print("🔥 Post-publish")
