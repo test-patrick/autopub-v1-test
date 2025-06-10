@@ -66,7 +66,7 @@ jobs:
 
       - name: Run local hello world action
         id: hello
-        uses: ./.github/actions/hello-world
+        uses: ./.github/actions/hello-world@main
         with:
           who-to-greet: "AutoPub Contributors"
 
