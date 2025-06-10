@@ -22,6 +22,7 @@ jobs:
             pyproject.toml
             autopub_plugins/
           sparse-checkout-cone-mode: false
+
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
