@@ -14,10 +14,12 @@ jobs:
       has_release: ${{ steps.check.outputs.has_release }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
-
+          sparse-checkout: |
+            RELEASE.md
+          sparse-checkout-cone-mode: false
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
