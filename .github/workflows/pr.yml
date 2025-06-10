@@ -56,3 +56,19 @@ jobs:
           name: autopub-data
           path: .autopub
           include-hidden-files: true
+
+  run-local-action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
+
+      - name: Run local hello world action
+        id: hello
+        uses: ./.github/actions/hello-world
+        with:
+          who-to-greet: "AutoPub Contributors"
+
+      - name: Get the output time
+        run: echo "The greeting was done at ${{ steps.hello.outputs.time }}"
