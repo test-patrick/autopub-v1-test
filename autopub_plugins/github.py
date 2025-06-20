@@ -30,7 +30,9 @@ class GithubConfig(BaseModel):
         """
         Thanks for adding the `RELEASE.md` file!
 
-        Here's a preview of the changelog:
+        Below is the changelog that will be used for the release.
+
+        ---
 
         {changelog}
         """,
@@ -42,7 +44,9 @@ class GithubConfig(BaseModel):
 
         Here's the error:
 
+        ```text
         {error}
+        ```
         """,
     )
 
