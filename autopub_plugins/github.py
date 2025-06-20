@@ -344,7 +344,7 @@ class GithubPlugin(AutopubPlugin):
     def _get_release_message(
         self,
         release_info: ReleaseInfo,
-        include_release_info: bool = False,
+        include_release_info: bool = True,
         discussion_url: Optional[str] = None,
     ) -> str:
         assert self.pull_request is not None
