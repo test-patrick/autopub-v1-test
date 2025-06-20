@@ -7,4 +7,4 @@ requires-python = ">=3.11"
 dependencies = []
 
 [tool.autopub]
-plugins = ["autopub_plugins.github", "autopub.plugins.uv"]
+plugins = ["autopub.plugins.github", "autopub.plugins.uv"]
