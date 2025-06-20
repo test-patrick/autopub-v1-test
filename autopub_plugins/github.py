@@ -359,7 +359,7 @@ class GithubPlugin(AutopubPlugin):
         if not include_release_info:
             return message
 
-        message += f"This release was contributed by @{contributors['pr_author']} in #{self.pull_request.number}"
+        message += f"\nThis release was contributed by @{contributors['pr_author']} in #{self.pull_request.number}"
 
         if contributors["additional_contributors"]:
             additional_contributors = [
