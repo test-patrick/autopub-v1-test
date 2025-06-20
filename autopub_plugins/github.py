@@ -70,20 +70,18 @@ class GithubPlugin(AutopubPlugin):
     ) -> None:
         """Update or create a comment on the current PR with the given text."""
         print(f"Updating or creating comment on PR {pr_number} in {self.repository}")
+
         repo: Repository = self._github.get_repo(self.repository)
         pr: PullRequest = repo.get_pull(pr_number)
 
-        # Look for existing autopub comment
         comment_body = f"{marker}\n{text}"
 
-        # Search for existing comment
         for comment in pr.get_issue_comments():
             if marker in comment.body:
-                # Update existing comment
                 comment.edit(comment_body)
+
                 return
 
-        # Create new comment if none exists
         pr.create_issue_comment(comment_body)
 
     def on_release_notes_valid(
@@ -94,7 +92,21 @@ class GithubPlugin(AutopubPlugin):
         if pr_number is None:
             return
 
-        self._update_or_create_comment(release_info.release_notes, pr_number)
+        text = textwrap.dedent(
+            f"""
+            ## Release notes
+
+            Thank you for contributing to {self.repository}!
+
+            Here's the preview of the release notes:
+
+            ---
+
+            {release_info.release_notes}
+            """
+        )
+
+        self._update_or_create_comment(text, pr_number)
 
     def on_release_notes_invalid(
         self, exception: AutopubException
@@ -104,7 +116,18 @@ class GithubPlugin(AutopubPlugin):
         if pr_number is None:
             return
 
-        self._update_or_create_comment(str(exception), pr_number)
+        text = textwrap.dedent(
+            f"""
+            ## Invalid release notes
+
+            Something went wrong while checking the release notes.
+            
+            Error: {exception}
+
+            """
+        )
+
+        self._update_or_create_comment(text, pr_number)
 
     def _create_release(self, release_info: ReleaseInfo) -> None:
         message = textwrap.dedent(
