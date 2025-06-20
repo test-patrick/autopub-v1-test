@@ -20,14 +20,8 @@ jobs:
           sparse-checkout: |
             RELEASE.md
             pyproject.toml
+            autopub_plugins/
           sparse-checkout-cone-mode: false
-
-      - name: Fetch files from main branch
-        run: |
-          # Fetch pyproject.toml and autopub_plugins/ from main branch
-          git fetch origin main:main
-          git checkout main -- pyproject.toml autopub_plugins/
-          echo "Fetched pyproject.toml and autopub_plugins/ from main branch"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
