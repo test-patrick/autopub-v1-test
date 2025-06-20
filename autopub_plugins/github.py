@@ -92,18 +92,20 @@ class GithubPlugin(AutopubPlugin):
         if pr_number is None:
             return
 
-        text = textwrap.dedent(
-            f"""
-            ## Release notes
+        text = (
+            textwrap.dedent(
+                f"""
+                ## Release notes
 
-            Thank you for contributing to {self.repository}!
+                Thank you for contributing to {self.repository}!
 
-            Here's the preview of the release notes:
+                Here's the preview of the release notes:
 
-            ---
-
-            {release_info.release_notes}
-            """
+                ---
+                """
+            )
+            + "\n\n"
+            + release_info.release_notes
         )
 
         self._update_or_create_comment(text, pr_number)
