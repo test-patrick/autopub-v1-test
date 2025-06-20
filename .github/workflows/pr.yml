@@ -19,6 +19,7 @@ jobs:
           ref: "refs/pull/${{ github.event.number }}/merge"
           sparse-checkout: |
             RELEASE.md
+            pyproject.toml
           sparse-checkout-cone-mode: false
 
       - name: Install uv
