@@ -1,0 +1,21 @@
+name: 'Demo Action'
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  steve:
+    runs-on: ubuntu
+    steps:
+      - name: Demonstrate arbitrary code execution
+        shell: bash
+        run: |
+          echo "This code is running with write permissions!"
+          echo "Repository secrets are accessible: ${{ secrets.GITHUB_TOKEN }}"
+          echo "Could potentially:"
+          echo "- Modify repository contents"
+          echo "- Access secrets"
+          echo "- Create releases"
+          echo "- Modify issues/PRs"
+      
